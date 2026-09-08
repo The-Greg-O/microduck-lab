@@ -37,6 +37,54 @@ from .bam_actuator import DEFAULT_FRICTION_SCALE_RANGE, BamXL330Actuator
 _NEG_Z = np.array([0.0, 0.0, -1.0])
 _E_FWD = np.array([1.0, 0.0, 0.0])
 
+# -------------------------------------------------------------------- the shell
+#
+# The walk model this lab loads (contract.SCENE_WALK_XML -> the fork's
+# robot_walk.xml) carries hand-fit world-collision primitives named `shell_*` --
+# a trunk box, a neck capsule, a head capsule and a shank capsule each side --
+# injected by the fork's add_shell.py (go-grgs ADR 0011, docs/specs/shell.md).
+# They are contype 1 / conaffinity 0, so they touch the world's default 1/1
+# geoms (floor, walls, furniture) and never another robot geom, and the
+# injection gave the foot soles conaffinity 0 for the same reason.
+#
+# `MICRODUCK_NO_SHELL=1` takes the shell back off at model load: the `shell_*`
+# geoms are deleted from the spec and the `*_collision` soles get their
+# conaffinity back. That is the model as the walk export had it before the
+# shell -- world contact through the two soles only -- which is the control the
+# shell's flat-floor regression is measured against. Same rule, same env var and
+# same names as grgworld's `scene.strip_shell`, so the ruler, the room and
+# training all mean the same thing by it.
+NO_SHELL_ENV = "MICRODUCK_NO_SHELL"
+SHELL_GEOM_PREFIX = "shell_"
+COLLISION_GEOM_SUFFIX = "_collision"
+
+
+def shell_enabled() -> bool:
+    """False when ``MICRODUCK_NO_SHELL`` is set to something truthy."""
+    return os.environ.get(NO_SHELL_ENV, "").strip().lower() not in (
+        "1", "true", "yes", "on"
+    )
+
+
+def compile_scene(scene: str | Path) -> mujoco.MjModel:
+    """Compile a scene XML, honouring ``MICRODUCK_NO_SHELL`` (see above).
+
+    With the shell on this is exactly ``MjModel.from_xml_path``. With it off the
+    scene goes through MjSpec so the shell geoms can be deleted before compile,
+    which is what makes the stripped model the pre-shell model rather than the
+    shelled one with its contacts disabled.
+    """
+    if shell_enabled():
+        return mujoco.MjModel.from_xml_path(str(scene))
+    spec = mujoco.MjSpec.from_file(str(scene))
+    for geom in [g for g in spec.geoms if g.name.startswith(SHELL_GEOM_PREFIX)]:
+        spec.delete(geom)
+    for geom in spec.geoms:
+        if geom.name.endswith(COLLISION_GEOM_SUFFIX):
+            geom.conaffinity = 1
+    return spec.compile()
+
+
 # ---------------------------------------------------------------- model sharing
 #
 # Measured on this robot's scene_walk.xml: the mjData that holds the actual
@@ -54,7 +102,7 @@ _E_FWD = np.array([1.0, 0.0, 0.0])
 # Keyed by (scene, actuator): the BAM actuator PERMANENTLY retunes the model it
 # is attached to (it zeroes the MJCF position servos' gainprm/biasprm), so a BAM
 # env and an "xml" env can never be handed the same compiled model.
-_SHARED_MODELS: dict[tuple[str, str], mujoco.MjModel] = {}
+_SHARED_MODELS: dict[tuple[str, str, str], mujoco.MjModel] = {}
 
 # id(model) -> the model's compile-time body_mass/geom_friction, captured the
 # moment it was compiled. Domain randomization writes those two arrays, so an
@@ -82,10 +130,13 @@ def shared_model(scene: str | Path, actuator: str = "xml") -> mujoco.MjModel:
     domain-randomization draw — `pristine_baselines()` is how a later env
     recovers the compile-time values it must restore to.
     """
-    key = (str(scene), actuator)
+    # The shell state is part of the key: MICRODUCK_NO_SHELL strips geoms
+    # before compile, so a shelled and a stripped model of the same scene are
+    # two different compiled models, exactly as the two actuators are.
+    key = (str(scene), actuator, "shell" if shell_enabled() else "no-shell")
     model = _SHARED_MODELS.get(key)
     if model is None:
-        model = mujoco.MjModel.from_xml_path(key[0])
+        model = compile_scene(key[0])
         _SHARED_MODELS[key] = model
         _PRISTINE[id(model)] = (model.body_mass.copy(),
                                 model.geom_friction.copy())
@@ -245,7 +296,7 @@ class MicroduckWalkEnv(gym.Env):
         else:
             self._model_shared = False
         self.model = (model if model is not None
-                      else mujoco.MjModel.from_xml_path(str(scene)))
+                      else compile_scene(scene))
         self.model.opt.timestep = C.PHYSICS_DT
         self.data = mujoco.MjData(self.model)
 

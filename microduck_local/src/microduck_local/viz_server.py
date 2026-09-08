@@ -173,7 +173,7 @@ from . import behaviors as behaviors_mod
 from . import contract as C
 from . import motion as motion_mod
 from .train import RUNS_DIR
-from .walk_env import MicroduckWalkEnv, shared_model_scope
+from .walk_env import MicroduckWalkEnv, compile_scene, shared_model_scope
 
 TICK_HZ = 50            # env control rate (real time)
 SEND_EVERY = 2          # broadcast at 25 Hz
@@ -2182,7 +2182,7 @@ def extract_scene() -> dict:
     (jenga-stacker's extract_visual_scene, deduplicated by mesh id)."""
     import mujoco
 
-    m = mujoco.MjModel.from_xml_path(str(C.SCENE_WALK_XML))
+    m = compile_scene(C.SCENE_WALK_XML)
     mesh_ids: dict[int, int] = {}
     meshes: list[dict] = []
     geoms: list[dict] = []
@@ -2257,7 +2257,7 @@ class PoseScratch:
         import mujoco
 
         self.mj = mujoco
-        self.model = mujoco.MjModel.from_xml_path(str(C.SCENE_WALK_XML))
+        self.model = compile_scene(C.SCENE_WALK_XML)
         self.data = mujoco.MjData(self.model)
         self.joint_qpos_adr = np.array(
             [self.model.joint(n).qposadr[0] for n in C.JOINT_NAMES])

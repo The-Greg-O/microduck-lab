@@ -11,6 +11,23 @@ training cannot start. This project keeps the same MJCF models, the same
 61-obs / 14-action contract and the same 50 Hz timing as
 `microduck_rl/scripts/infer_policy.py`, and lets you iterate locally.
 
+**The shell** — the walk model this lab loads (`contract.SCENE_WALK_XML` → the
+fork's `robot_walk.xml`) carries hand-fit world-collision primitives named
+`shell_*`: a trunk box, a neck capsule, a head capsule and a shank capsule each
+side, injected by the fork's `add_shell.py` (go-grgs ADR 0011). They are
+contype 1 / conaffinity 0, so they touch the world and never another robot geom,
+and the injection gave the foot soles conaffinity 0 for the same reason. Before
+the shell the robot touched the world through its two soles only.
+
+`MICRODUCK_NO_SHELL=1` takes the shell back off at model load — the `shell_*`
+geoms are deleted from the spec and the soles get their conaffinity back, before
+compile — which is the pre-shell model, i.e. the model every shipped policy was
+trained on. Same env var, same rule and same names as grgworld's
+`scene.strip_shell`, so the ruler, the room and training all mean the same thing
+by it. Use it to measure a policy with and without (go-grgs
+`docs/research/shell-regression.md` is that measurement), and remember that a grg
+on the stripped model has nothing but its feet to lie on.
+
 **Actuator model** — pick with `actuator="xml"|"bam"` or `MICRODUCK_ACTUATOR`:
 
 | | `xml` (default) | `bam` |
