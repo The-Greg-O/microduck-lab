@@ -2,7 +2,7 @@
 .page * { box-sizing: border-box; }
 .page button { font: inherit; cursor: pointer; color: inherit; }
 .page button:focus-visible { outline: 3px solid #47847f; outline-offset: 3px; }
-.viewport { position: absolute; inset: 0; }
+.viewport { position: absolute; inset: 0; z-index: 0; }
 .header { position: absolute; z-index: 2; top: 24px; left: 28px; right: 28px; display: flex; align-items: center; gap: 22px; pointer-events: none; }
 .brand { display: flex; align-items: center; gap: 12px; margin-right: auto; }
 .brandIcon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 15px; background: #384c40; color: #eef0df; font-size: 28px; box-shadow: 0 3px 12px #26362a14; }
@@ -59,14 +59,13 @@
 .mapTitle h3 { margin: 0; font-size: 15px; font-weight: 600; }
 .mapTitle > span { color: #7c8978; font-size: 10px; }
 .mapState { font-size: 11px; color: #6b7f66; margin: 9px 0 12px; }
-.mapCanvas { width: 100%; max-height: 190px; object-fit: contain; display: block; background: #c1c9be; border: 1px solid #bcc7b6; border-radius: 7px; image-rendering: pixelated; }
+.mapCanvas { width: 100%; max-height: 190px; object-fit: contain; display: block; background: #253743; border: 1px solid #bcc7b6; border-radius: 7px; image-rendering: pixelated; }
 .mapMeta { font-size: 9px; display: flex; justify-content: space-between; gap: 8px; color: #7c8978; margin-top: 10px; }
 .emptyMap { font-size: 12px; color: #7c8978; padding: 22px 16px; border: 1px dashed #d3dacb; border-radius: 7px; line-height: 1.6; text-align: center; }
 .mapNotice { padding: 10px; background: #f3e9d7; color: #997744; font-size: 10px; line-height: 1.6; border-radius: 6px; }
 .legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 9px; color: #7c8978; }
 .legend span { display: flex; align-items: center; gap: 4px; }
 .legend i { height: 7px; width: 7px; border: 1px solid #b4bfae; }
-.occupied { background: #41524b; }.free { background: #f3f2e5; }.unknown { background: #c1c9be; }
 .mapFootnote { color: #8a9484; font-size: 10px; line-height: 1.6; margin: 15px 0 0; }
 @media (max-width: 1080px) { .bottom[data-maps=true] { width: calc(100% - 395px); } .bottom[data-maps=true] .companions { grid-template-columns: 1fr; } .bottom[data-maps=true] .footer span:last-child { display: none; } }
 @media (max-width: 650px) {

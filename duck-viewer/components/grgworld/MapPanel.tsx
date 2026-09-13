@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from 'react';
-import { mapCaptureAge, mapStatus, type MapSnapshot, type WorldClient } from '@/lib/grgworld';
+import { MAP_COLORS, mapCaptureAge, mapCellColor, mapStatus, type MapSnapshot, type WorldClient } from '@/lib/grgworld';
 import styles from './pet-camera.module.css';
 
 function OccupancyMap({ map, name }: { map: MapSnapshot; name: string }) {
@@ -17,7 +17,7 @@ function OccupancyMap({ map, name }: { map: MapSnapshot; name: string }) {
     for (let row = 0; row < g.height; row++) for (let col = 0; col < g.width; col++) {
       // Row zero starts at minimum map Y; display +Y upward. Zero odds = unknown.
       const odds = g.log_odds[row * g.width + col];
-      const rgb = odds > 0 ? [65, 82, 75] : odds < 0 ? [243, 242, 229] : [193, 201, 190];
+      const rgb = mapCellColor(odds);
       const i = ((g.height - 1 - row) * g.width + col) * 4;
       image.data.set([...rgb, 255], i);
     }
@@ -59,8 +59,8 @@ export default function MapPanel({ client, now, onClose }: { client: WorldClient
         </section>;
       })}
       {!!data.diagnostics.queue_dropped && <p className={styles.mapNotice}>{data.diagnostics.queue_dropped} mapping samples dropped by the server.</p>}
-      <div className={styles.legend}><span><i className={styles.occupied} />Occupied evidence</span><span><i className={styles.free} />Free</span><span><i className={styles.unknown} />Unknown</span></div>
-      <p className={styles.mapFootnote}>Arrow: estimated pose in that grg’s map frame. Tracking can resume with an unverified location.</p>
+      <div className={styles.legend}>{(['unknown', 'free', 'weak', 'occupied'] as const).map(kind => <span key={kind}><i style={{ background: `rgb(${MAP_COLORS[kind].join(',')})` }} />{kind.charAt(0).toUpperCase() + kind.slice(1)}</span>)}</div>
+      <p className={styles.mapFootnote}>Free and occupied colors show sensor evidence, not a clearance guarantee. Arrow: estimated pose in that grg’s map frame. Tracking can resume with an unverified location.</p>
     </>}
   </aside>;
 }

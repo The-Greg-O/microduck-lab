@@ -40,7 +40,7 @@ function SharedOffice({ scene, client }: { scene: WorldScene; client: WorldClien
       {body.geometry && <mesh geometry={body.geometry}><meshStandardMaterial vertexColors roughness={.78} metalness={.04} /></mesh>}
     </group>)}
     {scene.grgs.map((grg, i) => <group key={grg.name} ref={node => { labels.current[i] = node; }}>
-      <Html center style={{ pointerEvents: 'none' }}><span className={styles.worldLabel} data-grg={grg.name.toLowerCase()}>{grg.name.charAt(0).toUpperCase() + grg.name.slice(1)}</span></Html>
+      <Html center zIndexRange={[1, 0]} style={{ pointerEvents: 'none' }}><span className={styles.worldLabel} data-grg={grg.name.toLowerCase()}>{grg.name.charAt(0).toUpperCase() + grg.name.slice(1)}</span></Html>
     </group>)}
   </group>;
 }

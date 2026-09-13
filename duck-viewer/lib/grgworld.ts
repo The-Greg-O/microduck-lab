@@ -129,6 +129,16 @@ export function mapCaptureAge(map: Pick<MapSnapshot, 'captured_at'>, simTime: nu
   return map.captured_at !== null && map.captured_at >= 0 && simTime !== undefined ? Math.max(0, simTime - map.captured_at) : null;
 }
 
+// Match grgworld/scripts/mapping_scenario.py's evidence legend and the
+// mapping_evaluation occupied-cell threshold (>150 fixed-point log odds).
+export const MAP_COLORS = {
+  unknown: [37, 55, 67], free: [188, 206, 214], weak: [163, 145, 95], occupied: [83, 217, 174],
+} as const;
+
+export function mapCellColor(logOdds: number) {
+  return logOdds > 150 ? MAP_COLORS.occupied : logOdds > 0 ? MAP_COLORS.weak : logOdds < 0 ? MAP_COLORS.free : MAP_COLORS.unknown;
+}
+
 /** GETs and a receive-only WebSocket. No reset, drive, or policy command exists here. */
 export class WorldClient {
   readonly state = new WorldState();

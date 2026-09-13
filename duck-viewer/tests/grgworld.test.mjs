@@ -6,7 +6,7 @@ import ts from 'typescript';
 // Exercise the browser-independent protocol boundary with Node's built-in runner.
 const source = readFileSync(new URL('../lib/grgworld.ts', import.meta.url), 'utf8');
 const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
-const { WorldState, WorldClient, worldAddress, parseScene, mapStatus, mapCaptureAge } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
+const { WorldState, WorldClient, worldAddress, parseScene, mapStatus, mapCaptureAge, mapCellColor } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
 
 const scene = (stream_id = 'a') => ({ protocol: 1, stream_id, bodies: ['world', 'Mongo/trunk', 'Kiwi/trunk'], meshes: [], geoms: [], grgs: [{name: 'Mongo', body: 1}, {name: 'Kiwi', body: 2}], world: { name: 'Office', bounds: [-3, -2, 3, 2] } });
 const frame = (sequence = 1, sim_time = 0, stream_id = 'a') => ({ protocol: 1, stream_id, sequence, sim_time, bodies: Array.from({length: 3}, () => [0, 0, 0, 1, 0, 0, 0]), grgs: ['Mongo', 'Kiwi'].map(name => ({ name, activity: 'look_around', chain: null, battery: .8, fallen: false })) });
@@ -78,6 +78,13 @@ test('cached map HTTP responses cannot hide stale capture times; pending maps re
   map.grid = {width: 2, height: 2, cell: .04, origin: [-1,-1], log_odds: [0, -100, 100, 0]};
   assert.equal(s.acceptMaps(maps, 9000), 'accepted');
   assert.equal(mapCaptureAge(s.maps.maps.Mongo, 10), 9);
+});
+
+test('map pixels preserve foundation unknown, free, weak and occupied evidence thresholds', () => {
+  for (const odds of [-150, -1]) assert.deepEqual(mapCellColor(odds), [188, 206, 214]);
+  assert.deepEqual(mapCellColor(0), [37, 55, 67]);
+  for (const odds of [1, 149, 150]) assert.deepEqual(mapCellColor(odds), [163, 145, 95]);
+  for (const odds of [151, 500]) assert.deepEqual(mapCellColor(odds), [83, 217, 174]);
 });
 
 test('transport only receives poses and requests maps while the panel is open', async () => {

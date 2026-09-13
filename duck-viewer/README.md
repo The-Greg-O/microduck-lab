@@ -167,8 +167,10 @@ fetching the replacement scene. Reordered/duplicate frames do not refresh Live.
 Maps show each grg's own estimate in its own map frame, not a fused map or office
 ground truth. The grid's `origin` is its minimum X/Y corner; cell `(row, col)`
 has center `(origin_x + (col + 0.5) * cell, origin_y + (row + 0.5) * cell)`.
-Row-major fixed-point `log_odds` are displayed with +Y upward: positive is
-occupied evidence, negative free, zero unknown. The orange arrow is
+Row-major fixed-point `log_odds` are displayed with +Y upward, using the mapping
+foundation's evidence legend: zero is unknown, negative is free evidence,
+1–150 is weak occupancy evidence, and values above 150 are occupied evidence.
+These are evidence categories, not navigation clearance guarantees. The orange arrow is
 `tracked_pose`, not simulator truth. Mapping capture age is measured against
 the advancing simulation clock so repeatedly served old snapshots still show
 as stale. `tracking: true` is not proof of a confirmed location: retained
