@@ -130,6 +130,81 @@ Panel states, chat history, and the camera persist in localStorage; the duck
 roster itself persists server-side (`microduck_local/lab-state.json`) across
 lab restarts.
 
+## Grgworld pet camera
+
+`/grgworld` is a separate, observation-only window into Mongo and Kiwi's shared
+grgworld office. Start the browser-observer backend from the go-grgs project
+(see that project's README), run this viewer with `PORT=63318 npm run dev`, and open
+`http://localhost:63318/grgworld`. The backend defaults to `127.0.0.1:8789`;
+`?world=host:port` overrides it. HTTPS viewer pages use HTTPS/WSS for the backend.
+The existing `/` lab route and its `?lab=` address remain independent.
+
+The **Room**, **Follow Mongo**, and **Follow Kiwi** buttons move only the browser
+camera. Drag to orbit and scroll to zoom; Room also allows panning. The view,
+per-camera position, and Maps panel preference persist under
+`grgworld.petcam.*` localStorage keys. There are no reset, drive, training, or
+policy controls on this route. Physics, activity, and battery come from the
+server; the 1× label describes its real-time simulation pacing, and the elapsed
+clock is server simulation time.
+
+The client in `lib/grgworld.ts` speaks protocol 1:
+
+- `GET /scene` supplies a `stream_id`, merged-mesh inputs, every global body,
+  the named grgs' trunk-body indices, and the office bounds.
+- Receive-only `WS /ws` supplies `stream_id`, monotonically increasing
+  `sequence`, `sim_time`, all body poses, and activity/battery/fall telemetry.
+- `GET /maps` is polled once per second only while Maps is open. It supplies
+  `{protocol, stream_id, maps, diagnostics}`. Disabled mapping is displayed as
+  off; empty maps and a missing first still window remain waiting states.
+
+The **Live** indicator requires recent, advancing frames. After two seconds
+without fresh advancing simulation time, the feed is marked paused. Disconnects
+retain the final received pose with an explicit message and retry automatically.
+The renderer applies received poses directly; it never extrapolates after a
+stall. A changed `stream_id` discards all old scene, pose, and map data before
+fetching the replacement scene. Reordered/duplicate frames do not refresh Live.
+
+Maps show each grg's own estimate in its own map frame, not a fused map or office
+ground truth. The grid's `origin` is its minimum X/Y corner; cell `(row, col)`
+has center `(origin_x + (col + 0.5) * cell, origin_y + (row + 0.5) * cell)`.
+Row-major fixed-point `log_odds` are displayed with +Y upward, using the mapping
+foundation's evidence legend: zero is unknown, negative is free evidence,
+1–150 is weak occupancy evidence, and values above 150 are occupied evidence.
+These are evidence categories, not navigation clearance guarantees. The orange arrow is
+`tracked_pose`, not simulator truth. Mapping capture age is measured against
+the advancing simulation clock so repeatedly served old snapshots still show
+as stale. `tracking: true` is not proof of a confirmed location: retained
+`resumed_unverified` and `relocalized` notes remain distinct in the UI.
+
+`components/grgworld/WorldView.tsx` reuses the existing exported
+`buildBodyGeometries` from `Duck.tsx`: one merged mesh per body, the entire office
+rendered once, MuJoCo Z-up converted by a -90° X group, no grid offsets, no shadow
+maps, and DOM labels. It uses the streamed per-grg material colors. The upstream
+[/sim implementation](https://github.com/jonathanhawkins/microduck-lab/tree/3f788f3/duck-viewer)
+was checked at revision `3f788f3` when adding this route; it uses the same body
+merging and axis conventions. Its Scenario stage and editable training-world
+controls are separate from grgworld's streamed office.
+
+Validate the protocol behavior and both frontend routes with:
+
+```sh
+node --test tests/grgworld.test.mjs
+npm run build
+```
+
+The focused tests exercise stream replacement, stalled/reordered frames, bad
+poses, disabled and pending maps, capture freshness, unverified localization,
+and receive-only transport with map requests gated by the panel.
+
+Also verify stream replacement in a real browser without reloading the page:
+start an office feed, note the two world labels, stop the backend, and restart
+it with a new stream. The clock must reset, Live must recover, and the scene must
+contain exactly one office, one person and two grgs with two labels. There must
+be one `canvas` and one `[data-world-stream]` element with the new stream ID.
+Repeat while following a grg and with Maps open. The complete Canvas is keyed
+by stream ID so its Three scene, controls and Html portal container are retired
+together; office and camera children must never receive duplicate sibling keys.
+
 ## Notes for future work
 
 - The scene payload is ~20 MB raw (gzipped over the wire, one-time). If it ever
