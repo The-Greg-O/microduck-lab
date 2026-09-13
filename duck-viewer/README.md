@@ -196,6 +196,15 @@ The focused tests exercise stream replacement, stalled/reordered frames, bad
 poses, disabled and pending maps, capture freshness, unverified localization,
 and receive-only transport with map requests gated by the panel.
 
+Also verify stream replacement in a real browser without reloading the page:
+start an office feed, note the two world labels, stop the backend, and restart
+it with a new stream. The clock must reset, Live must recover, and the scene must
+contain exactly one office, one person and two grgs with two labels. There must
+be one `canvas` and one `[data-world-stream]` element with the new stream ID.
+Repeat while following a grg and with Maps open. The complete Canvas is keyed
+by stream ID so its Three scene, controls and Html portal container are retired
+together; office and camera children must never receive duplicate sibling keys.
+
 ## Notes for future work
 
 - The scene payload is ~20 MB raw (gzipped over the wire, one-time). If it ever

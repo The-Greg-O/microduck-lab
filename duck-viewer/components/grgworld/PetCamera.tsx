@@ -15,7 +15,7 @@ function Companion({ name, status, active, onFollow }: { name: string; status?: 
   const displayName = titleCase(name);
   return <button className={styles.companion} data-active={active} onClick={onFollow} aria-pressed={active} aria-label={`Follow ${displayName}`}>
     <span className={styles.avatar} data-grg={name.toLowerCase()}>{displayName.slice(0, 1)}</span>
-    <span className={styles.companionText}><strong>{displayName}<span className={styles.followLabel}>{active ? 'Following' : 'Follow'}</span></strong><span>{status ? titleCase(status.activity) : 'Waiting for a frame'}{status?.fallen && <em> · Fallen</em>}</span>{status?.chain && <small>{titleCase(status.chain)}</small>}</span>
+    <span className={styles.companionText}><strong>{displayName}<span className={styles.followLabel}>{active ? 'Following' : 'Follow'}</span></strong><span>{status ? status.activity === 'brainless' ? 'Controlled observation' : titleCase(status.activity) : 'Waiting for a frame'}{status?.fallen && <em> · Fallen</em>}</span>{status?.chain && <small>{titleCase(status.chain)}</small>}</span>
     <span className={styles.battery} aria-label={battery === null ? 'Battery unavailable' : `${battery}% battery`}><span className={styles.batteryOutline}><i style={{ width: `${battery ?? 0}%` }} data-low={battery !== null && battery < 20} /></span><span>{battery === null ? '—' : `${battery}%`}</span></span>
   </button>;
 }

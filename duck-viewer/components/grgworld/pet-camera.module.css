@@ -4,14 +4,14 @@
 .page button:focus-visible { outline: 3px solid #47847f; outline-offset: 3px; }
 .viewport { position: absolute; inset: 0; z-index: 0; }
 .header { position: absolute; z-index: 2; top: 24px; left: 28px; right: 28px; display: flex; align-items: center; gap: 22px; pointer-events: none; }
-.brand { display: flex; align-items: center; gap: 12px; margin-right: auto; }
+.brand { display: flex; align-items: center; gap: 12px; margin-right: auto; padding: 6px 12px 6px 6px; border-radius: 18px; background: var(--paper); }
 .brandIcon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 15px; background: #384c40; color: #eef0df; font-size: 28px; box-shadow: 0 3px 12px #26362a14; }
 .eyebrow { display: block; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #647066; }
 .brand h1 { font-size: 24px; letter-spacing: -.035em; margin: 5px 0 0; font-weight: 600; }
 .connection { display: flex; align-items: center; gap: 8px; background: var(--paper); border: 1px solid #fefdf8; border-radius: 30px; padding: 10px 14px; font-size: 12px; font-weight: 600; box-shadow: 0 3px 16px #22351b08; }
 .connection i { width: 7px; height: 7px; border-radius: 50%; background: #b58e4f; }
 .connection[data-live=true] i { background: #5c8b62; box-shadow: 0 0 0 3px #5c8b6216; }
-.clock { text-align: right; font-size: 10px; color: #647066; }
+.clock { text-align: right; font-size: 10px; color: #647066; padding: 10px 12px; border-radius: 12px; background: var(--paper); }
 .clock strong { display: block; font: 15px ui-monospace, SFMono-Regular, monospace; color: #303b35; margin-top: 5px; }
 .toolbar { position: absolute; z-index: 2; top: 94px; left: 28px; right: 28px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .cameraModes { display: flex; gap: 3px; padding: 4px; background: var(--paper); border: 1px solid #fffef9; border-radius: 12px; box-shadow: 0 3px 16px #22351b09; }
@@ -22,7 +22,7 @@
 .mapsToggle span { font-size: 19px; line-height: 12px; }
 .mapsToggle[data-active=true] { background: #3d5144; color: #fffdf4; }
 .bottom { position: absolute; left: 28px; bottom: 22px; width: min(670px, calc(100% - 56px)); pointer-events: none; }
-.roomCaption { display: flex; flex-direction: column; gap: 7px; margin: 0 0 16px 2px; font-size: 14px; text-shadow: 0 1px 8px #f9f7ee; }
+.roomCaption { display: flex; flex-direction: column; gap: 7px; margin: 0 0 16px 2px; padding: 10px 13px; border-radius: 12px; width: fit-content; max-width: 100%; background: var(--paper); font-size: 14px; }
 .companions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; pointer-events: auto; }
 .companion { border: 1px solid #fffef9; background: var(--paper); border-radius: 15px; padding: 16px; display: flex; align-items: center; gap: 12px; text-align: left; box-shadow: 0 4px 24px #24382e0c; min-height: 86px; }
 .companion:hover, .companion[data-active=true] { border-color: #78947e; }
@@ -40,6 +40,7 @@
 .batteryOutline i { display: block; height: 100%; background: #879e72; border-radius: 1px; }
 .batteryOutline i[data-low=true] { background: #c69248; }
 .footer { display: flex; justify-content: space-between; margin-top: 13px; padding: 0 2px; color: #70796d; font-size: 10px; }
+.footer > span { padding: 5px 7px; border-radius: 6px; background: var(--paper); }
 .waiting { position: absolute; top: 43%; left: 50%; transform: translate(-50%,-50%); width: min(420px,85%); text-align: center; }
 .waitingIcon { font: 56px Georgia, serif; color: #839782; }
 .waiting h2 { font: 26px Georgia, serif; margin: 16px 0 12px; }

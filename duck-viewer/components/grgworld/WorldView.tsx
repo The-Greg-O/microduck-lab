@@ -88,13 +88,15 @@ function Camera({ scene, client, mode }: { scene: WorldScene; client: WorldClien
 }
 
 export default function WorldView({ scene, client, mode }: { scene: WorldScene; client: WorldClient; mode: CameraMode }) {
-  return <Canvas dpr={[1, 1.5]} camera={{ position: [5, 6, 7], fov: 42, near: .02, far: 150 }}
+  // A stream owns the entire R3F root and Html portal container. Replace that
+  // root on restart; child keys alone cannot retire a previous world's canvas.
+  return <Canvas key={scene.stream_id} data-world-stream={scene.stream_id} dpr={[1, 1.5]} camera={{ position: [5, 6, 7], fov: 42, near: .02, far: 150 }}
     gl={{ antialias: true, alpha: false }} aria-label="Mongo and Kiwi together in their shared office">
     <color attach="background" args={['#e8e5de']} />
     <ambientLight intensity={1.5} />
     <hemisphereLight args={['#f9f5eb', '#9b9c94', 1.5]} />
     <directionalLight position={[3, 7, 5]} intensity={2.2} />
-    <SharedOffice key={scene.stream_id} scene={scene} client={client} />
-    <Camera key={scene.stream_id} scene={scene} client={client} mode={mode} />
+    <SharedOffice scene={scene} client={client} />
+    <Camera scene={scene} client={client} mode={mode} />
   </Canvas>;
 }
